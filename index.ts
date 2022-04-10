@@ -1,6 +1,152 @@
 import '@logseq/libs';
+//FIXME if current page = org-mode, use different markup
 
-const pluginName = ["logseq-analysis", "Logseq Starter"]
+const reEmoji = /[\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u{1f680}-\u{1f6ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f1e6}-\u{1f1ff}\u{1f191}-\u{1f251}\u{1f004}\u{1f0cf}\u{1f170}-\u{1f171}\u{1f17e}-\u{1f17f}\u{1f18e}\u{3030}\u{2b50}\u{2b55}\u{2934}-\u{2935}\u{2b05}-\u{2b07}\u{2b1b}-\u{2b1c}\u{3297}\u{3299}\u{303d}\u{00a9}\u{00ae}\u{2122}\u{23f3}\u{24c2}\u{23e9}-\u{23ef}\u{25b6}\u{23f8}-\u{23fa}]/ug
+const reCode  = /(```[\s\S]*?```)/gm
+const reQuery = /(#\+BEGIN_QUERY[\s\S]*?#\END_QUERY)/gm
+const reQuspl = /({{query[\s\S]*?}})/gm
+
+const pluginName = ["logseq-analysis", "Logseq Analysis"]
+const queryPages = `[:find (pull ?p [*]) :where [_ :block/page ?p]]`
+const queryTasks = `[:find (pull ?b [*]) :where [?b :block/marker ?m] (not [(contains? #{"DONE"} ?m)])]`
+const queryDone  = `[:find (pull ?b [*]) :where [?b :block/marker ?m] [(contains? #{"DONE"} ?m)]]`
+const queryBlocks = `[:find (pull ?b [*]) :where [?b :block/uuid ?u]]`
+
+
+// wholesale lifted from https://github.com/hkgnp/logseq-wordcount-plugin/blob/master/index.js
+// Credit to https://stackoverflow.com/users/11854986/ken-lee for the below function
+const mixedWordsFunction = (str) => {
+  // console.log("mixed")
+  /// fix problem in special characters such as middle-dot, etc.
+  str = str.replace(/[\u007F-\u00FE.,\/#!$%\^&\*;:{}=\-_`~()>\\]/g, ' ');
+
+  /// make a duplicate first...
+  let str1 = str;
+  let str2 = str;
+
+  /// the following remove all chinese characters and then count the number of english characters in the string
+  str1 = str1.replace(/[^!-~\d\s]+/gi, ' ');
+
+  /// the following remove all english characters and then count the number of chinese characters in the string
+  str2 = str2.replace(/[!-~\d\s]+/gi, '');
+
+  const matches1 = str1.match(/[\u00ff-\uffff]|\S+/g);
+  const matches2 = str2.match(/[\u00ff-\uffff]|\S+/g);
+
+  const count1 = matches1 ? matches1.length : 0;
+  const count2 = matches2 ? matches2.length : 0;
+
+  /// return the total of the mixture
+  // console.log(`Count 1:${count1} 2:${count2}`)
+  return count1 + count2;
+};
+
+async function runQuery(query:string) {
+  try {
+    let qresult = await logseq.DB.datascriptQuery(query)
+        qresult = qresult?.flat()
+    if(qresult) {
+      // console.log("Succes",qresult)
+      return qresult.length
+    }
+    console.log("Sorry",qresult)
+    return `Sorry query error: ${query}`
+  } catch (err) {
+    console.log(err)
+  }}
+
+// https://gist.github.com/lsauer/2757250 //count characters
+async function parseContent(query:string) {
+  try {
+    let qresult = await logseq.DB.datascriptQuery(query)
+        qresult = qresult?.flat()
+    if(qresult) {
+      let totalWords:number = 0
+      let totalChars:number = 0
+      let totalEmoji:number = 0
+      let codeBlocks:number = 0
+      let codeChars:number  = 0
+      let queryBlocks:number = 0
+      let querySimple:number = 0
+      for (let a = 0; a < qresult.length; a++) {
+        if (qresult[a]?.content) {
+          totalWords += mixedWordsFunction(qresult[a].content);
+          totalChars += (qresult[a].content.match(/[a-zA-Z]/g)||[]).length
+          totalEmoji += (qresult[a].content.match(reEmoji)||[]).length          
+          codeBlocks += (qresult[a].content.match(reCode)||[]).length  
+          //FIXME codeChars is buggy
+          // if ((qresult[a].content.match(reCode)||[]).length > 0) {
+          //   console.log("DB reCode", (qresult[a].content.match(reCode)||[]))
+          //   for (let b = 0; b < qresult[a].content.match(reCode).length; b++) {
+          //     // console.log("DB 1", (qresult[a].content.match(reCode)||[])[b])
+              
+          //     let aa = mixedWordsFunction(qresult[a].content.match(reCode)[b])
+          //     codeChars += mixedWordsFunction(qresult[a].content.match(reCode)[b])
+          //     console.log(`DB loop ${b} #char ${aa}:`, qresult[a].content.match(reCode)[b])
+          //   }
+          // }
+          queryBlocks += (qresult[a].content.match(reQuery)||[]).length  
+          querySimple += (qresult[a].content.match(reQuspl)||[]).length  
+
+        }
+      }
+      return [totalWords, totalChars, totalEmoji, codeBlocks, codeChars, queryBlocks, querySimple]
+    }
+    console.log("Sorry",qresult)
+    return `Sorry query error: ${query}`  
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+async function analyseGraph() {
+  const pages = await runQuery(queryPages)
+  const blocksText = await runQuery(queryBlocks)
+  const tasks = await runQuery(queryTasks)
+  const done = await runQuery(queryDone)
+  
+  const txt = await parseContent(queryBlocks)
+  const wordsText = txt[0]
+  const charText = txt[1]
+  const emojiText = txt[2]
+
+  //Block Quotes?
+  const blocksCode = txt[3]
+  const charCode = txt[4]
+  
+  const refs = await runQuery(queryPages)
+  const extLinks = await runQuery(queryPages)
+
+  const query = txt[5]
+  const squery = txt[6]
+  
+  const video = await runQuery(queryPages)
+  const img = await runQuery(queryPages)
+
+  //FIXME2  + Characters: ${charCode}
+
+  const msg = `[:h2 "Logseq Database Analyses"]
+  + Pages: ${pages}
+  [:h3 "Text"]
+  + Blocks: ${blocksText}
+  + Words: ${wordsText} / Characters ${charText}
+  + Emoji: ${emojiText}
+  [:h3 "Code"]
+  + Codeblocks: ${blocksCode}
+  [:h3 "References"]
+  + Interconnections (refs): ${refs}
+  + External links: ${extLinks}
+  [:h3 "Task management"]
+  + Tasks (not DONE): ${tasks}
+  + Finished tasks (DONE): ${done}
+  [:h3 "Queries"]
+  + Number of simple queries: ${squery} 
+  + Number of advanced queries: ${query} 
+  [:h3 "Media"]
+  + Videos: ${video}
+  + Images: ${img}`
+  return msg
+}
 
 
 async function onTemplate(uuid){
@@ -28,8 +174,8 @@ const main = async () => {
       if (type !== ':analysis') return
 
       const templYN = await onTemplate(payload.uuid)      
-      let analysis = "This is cool!"
-      const uuid = false
+      let analysis:string = await analyseGraph()
+      const uuid = true //FIXME, old quality check
       const msg = uuid ? `<span style="color: green">{{renderer ${payload.arguments} }}</span> (will run with template)` : `<span style="color: red">{{renderer ${payload.arguments} }}</span> (wrong tag?)`
 
       if (templYN === true || uuid === false) { 
