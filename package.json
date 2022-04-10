@@ -1,5 +1,5 @@
 {
-  "name": "logseq-starter-plugin",
+  "name": "logseq-analysis",
   "version": "1.0",
   "description": "Starter Plugin",
   "main": "dist/index.html",
@@ -17,8 +17,8 @@
     "@logseq/libs": "0.0.1-alpha.34"
   },
   "logseq": {
-    "id": "logseq-starter-plugin",
-    "title": "logseq-starter-plugin",
+    "id": "logseq-analysis",
+    "title": "logseq-analysis",
     "icon": "./images/icon.png"
   },
   "devDependencies": {
