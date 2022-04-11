@@ -143,17 +143,17 @@ async function addBlock(items:Object) {
   let index = 0;
   for (const [key, value] of Object.entries(items)) {
     if (index === 0) {
-      ret = (value) ? `[:h3 "${value}"]\n[:ul ` : "[:ul "
+      ret = (value) ? `[:h3 "${value}"][:ul ` : "[:ul "
     } else {
       ret += `[:li "${key}: ${value}"]`
     }
     index++
   }
-  ret += "]\n" //close ul
+  ret += "]" //close ul
   return ret
 } 
 
-  let msg = `[:h2 "${logseq.settings.analyseTitle}"]\n`
+  let msg = `[:div.color-level {:style {:padding-left 5}} [:h2 "${logseq.settings.analyseTitle}"]`
   msg += await addBlock({
     title: false,
     "Pages": pages
@@ -189,6 +189,7 @@ async function addBlock(items:Object) {
     "Videos": video,
     "Assets": asset
   })
+  msg += "]" //close div
   return msg
 }
 
