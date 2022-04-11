@@ -129,32 +129,66 @@ async function analyseGraph() {
   const refs = await runQuery(queryRefs)
   const extLinks = txt[7]
   const video = txt[8]
-  const img = txt[9]
+  const asset = txt[9]
   //FIXME2  + Characters: ${charCode}
 
-  const msg = `[:h2 "Logseq Database Analyses"]
-  + Pages: ${pages}
-  [:h3 "Text"]
-  + Blocks: ${blocksText}
-  + Words: ${wordsText} / Characters ${charText}
-  + Emoji: ${emojiText}
-  [:h3 "Code"]
-  + Codeblocks: ${blocksCode}
-  [:h3 "References"]
-  + Interconnections (refs): ${refs}
-  + External links: ${extLinks}
-  [:h3 "Task management"]
-  + Tasks (not DONE): ${tasks}
-  + Finished tasks (DONE): ${done}
-  [:h3 "Queries"]
-  + Number of simple queries: ${squery} 
-  + Number of advanced queries: ${query} 
-  [:h3 "Media"]
-  + Videos: ${video}
-  + Assets (images, etc): ${img}`
+  
+async function addBlock(items:Object) {
+  console.log("Input ->", items)
+  let ret 
+  let index = 0;
+  for (const [key, value] of Object.entries(items)) {
+    console.log(`${index} -> ${key}: ${value}`);
+    if (index === 0) {
+      console.log(`DB index 0:: ${index} -> ${key}: ${value}`)
+      ret = (value) ? `[:h3 "${value}"]\n[:ul ` : "[:ul "
+    } else {
+      ret += `[:li "${key}: ${value}"]`
+    }
+    index++
+  }
+  ret += "]\n"
+  return ret
+} 
+
+  let msg = `[:h2 "Logseq Database Analyses"]\n`
+  msg += await addBlock({
+    title: false,
+    "Pages": pages
+  })
+  msg += await addBlock({
+    title: "Text",
+    "Blocks": blocksText,
+    "Words": wordsText,
+    "Characters": charText,
+    "Emoji": emojiText
+  })
+  msg += await addBlock({
+    title: "Code",
+    "Codeblocks": blocksCode
+  })
+  msg += await addBlock({
+    title: "References",
+    "Interconnections (refs)": refs,
+    "External links": extLinks
+  })
+  msg += await addBlock({
+    title: "Task management",
+    "Tasks": refs,
+    "Finished tasks (DONE)": done
+  })
+  msg += await addBlock({
+    title: "Queries",
+    "Number of simple queries": squery,
+    "Number of advanced queries": query
+  })
+  msg += await addBlock({
+    title: "Media",
+    "Videos": video,
+    "Assets": asset
+  })
   return msg
 }
-
 
 async function onTemplate(uuid){
   //is block(uuid) on a template?
