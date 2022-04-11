@@ -3,15 +3,18 @@ import '@logseq/libs';
 
 const reEmoji = /[\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u{1f680}-\u{1f6ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f1e6}-\u{1f1ff}\u{1f191}-\u{1f251}\u{1f004}\u{1f0cf}\u{1f170}-\u{1f171}\u{1f17e}-\u{1f17f}\u{1f18e}\u{3030}\u{2b50}\u{2b55}\u{2934}-\u{2935}\u{2b05}-\u{2b07}\u{2b1b}-\u{2b1c}\u{3297}\u{3299}\u{303d}\u{00a9}\u{00ae}\u{2122}\u{23f3}\u{24c2}\u{23e9}-\u{23ef}\u{25b6}\u{23f8}-\u{23fa}]/ug
 const reCode  = /(```[\s\S]*?```)/gm
-const reQuery = /(#\+BEGIN_QUERY[\s\S]*?#\END_QUERY)/gm
+const reQuery = /(#\+BEGIN_QUERY[\s\S]*?#\+END_QUERY)/gm
 const reQuspl = /({{query[\s\S]*?}})/gm
+const reLink  = /\[.*?\]\(http.*?\)/gm
+const reYoutb = /{{youtube https.*?}}/gm
+const reAsset = /!\[.*?\]\(\.\.\/assets\/.*?\)/gm
 
-const pluginName = ["logseq-analysis", "Logseq Analysis"]
-const queryPages = `[:find (pull ?p [*]) :where [_ :block/page ?p]]`
-const queryTasks = `[:find (pull ?b [*]) :where [?b :block/marker ?m] (not [(contains? #{"DONE"} ?m)])]`
-const queryDone  = `[:find (pull ?b [*]) :where [?b :block/marker ?m] [(contains? #{"DONE"} ?m)]]`
+const pluginName  = ["logseq-analysis", "Logseq Analysis"]
+const queryPages  = `[:find (pull ?p [*]) :where [_ :block/page ?p]]`
+const queryTasks  = `[:find (pull ?b [*]) :where [?b :block/marker ?m] (not [(contains? #{"DONE"} ?m)])]`
+const queryDone   = `[:find (pull ?b [*]) :where [?b :block/marker ?m] [(contains? #{"DONE"} ?m)]]`
 const queryBlocks = `[:find (pull ?b [*]) :where [?b :block/uuid ?u]]`
-
+const queryRefs   = `[:find (pull ?p [*]) :where  [_ :block/refs ?p]]`
 
 // wholesale lifted from https://github.com/hkgnp/logseq-wordcount-plugin/blob/master/index.js
 // Credit to https://stackoverflow.com/users/11854986/ken-lee for the below function
@@ -61,13 +64,16 @@ async function parseContent(query:string) {
     let qresult = await logseq.DB.datascriptQuery(query)
         qresult = qresult?.flat()
     if(qresult) {
-      let totalWords:number = 0
-      let totalChars:number = 0
-      let totalEmoji:number = 0
-      let codeBlocks:number = 0
-      let codeChars:number  = 0
+      let totalWords:number  = 0
+      let totalChars:number  = 0
+      let totalEmoji:number  = 0
+      let codeBlocks:number  = 0
+      let codeChars:number   = 0
       let queryBlocks:number = 0
       let querySimple:number = 0
+      let queryLinks:number  = 0
+      let queryYoutb:number  = 0
+      let queryAssets:number = 0
       for (let a = 0; a < qresult.length; a++) {
         if (qresult[a]?.content) {
           totalWords += mixedWordsFunction(qresult[a].content);
@@ -87,10 +93,13 @@ async function parseContent(query:string) {
           // }
           queryBlocks += (qresult[a].content.match(reQuery)||[]).length  
           querySimple += (qresult[a].content.match(reQuspl)||[]).length  
-
+          queryLinks  += (qresult[a].content.match(reLink)||[]).length  
+          queryYoutb  += (qresult[a].content.match(reYoutb)||[]).length  
+          queryAssets += (qresult[a].content.match(reAsset)||[]).length  
         }
       }
-      return [totalWords, totalChars, totalEmoji, codeBlocks, codeChars, queryBlocks, querySimple]
+      return [totalWords, totalChars, totalEmoji, codeBlocks, codeChars, 
+        queryBlocks, querySimple, queryLinks, queryYoutb, queryAssets]
     }
     console.log("Sorry",qresult)
     return `Sorry query error: ${query}`  
@@ -113,16 +122,14 @@ async function analyseGraph() {
   //Block Quotes?
   const blocksCode = txt[3]
   const charCode = txt[4]
-  
-  const refs = await runQuery(queryPages)
-  const extLinks = await runQuery(queryPages)
 
   const query = txt[5]
   const squery = txt[6]
-  
-  const video = await runQuery(queryPages)
-  const img = await runQuery(queryPages)
 
+  const refs = await runQuery(queryRefs)
+  const extLinks = txt[7]
+  const video = txt[8]
+  const img = txt[9]
   //FIXME2  + Characters: ${charCode}
 
   const msg = `[:h2 "Logseq Database Analyses"]
@@ -144,7 +151,7 @@ async function analyseGraph() {
   + Number of advanced queries: ${query} 
   [:h3 "Media"]
   + Videos: ${video}
-  + Images: ${img}`
+  + Assets (images, etc): ${img}`
   return msg
 }
 
@@ -191,6 +198,7 @@ const main = async () => {
       else { 
         // const nblock = await logseq.Editor.getBlock(uuid);
         // if (!nblock.properties?.id) { logseq.Editor.upsertBlockProperty(nblock.uuid, "id", nblock.uuid); }
+        await logseq.Editor.updateBlock(payload.uuid, "[:i \"Working...\"]") 
         await logseq.Editor.updateBlock(payload.uuid, analysis) 
       }  
     } catch (error) { console.log(error) }
