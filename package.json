@@ -1,6 +1,6 @@
 {
   "name": "logseq-analysis",
-  "version": "0.1.1c",
+  "version": "0.1.1d",
   "description": "Analyse your graph's content",
   "main": "dist/index.html",
   "targets": {

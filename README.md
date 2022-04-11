@@ -169,15 +169,15 @@ Project Link: [https://github.com/QWxleA/logseq-analysis/](https://github.com/QW
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/othneildrew/logseq-analysis.svg?style=for-the-badge
+[contributors-shield]: https://img.shields.io/github/contributors/QWxleA/logseq-analysis.svg?style=for-the-badge
 [contributors-url]: https://github.com/QWxleA/logseq-analysis/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/othneildrew/logseq-analysis.svg?style=for-the-badge
+[forks-shield]: https://img.shields.io/github/forks/QWxleA/logseq-analysis.svg?style=for-the-badge
 [forks-url]: https://github.com/QWxleA/logseq-analysis/network/members
-[stars-shield]: https://img.shields.io/github/stars/othneildrew/logseq-analysis.svg?style=for-the-badge
+[stars-shield]: https://img.shields.io/github/stars/QWxleA/logseq-analysis.svg?style=for-the-badge
 [stars-url]: https://github.com/QWxleA/logseq-analysis/stargazers
-[issues-shield]: https://img.shields.io/github/issues/othneildrew/logseq-analysis.svg?style=for-the-badge
+[issues-shield]: https://img.shields.io/github/issues/QWxleA/logseq-analysis.svg?style=for-the-badge
 [issues-url]: https://github.com/QWxleA/logseq-analysis/issues
-[license-shield]: https://img.shields.io/github/license/othneildrew/logseq-analysis.svg?style=for-the-badge
+[license-shield]: https://img.shields.io/github/license/QWxleA/logseq-analysis.svg?style=for-the-badge
 [license-url]: https://github.com/QWxleA/logseq-analysis/blob/master/LICENSE.txt
 [product-screenshot]: ./images/screenshot.gif
 [configuration-screenshot]: ./images/configuration.png
