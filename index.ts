@@ -17,6 +17,8 @@ const reQuspl = /({{query[\s\S]*?}})/gm
 const reLink  = /\[.*?\]\(http.*?\)/gm
 const reYoutb = /{{youtube https.*?}}/gm
 const reAsset = /!\[.*?\]\(\.\.\/assets\/.*?\)/gm
+//FIXME what about other 'alphabets'?
+const reChars = /[a-zA-Z]/g
 
 const pluginName  = ["logseq-analysis", "Logseq Analysis"]
 const queryPages  = `[:find (pull ?p [*]) :where [_ :block/page ?p]]`
@@ -28,7 +30,6 @@ const queryRefs   = `[:find (pull ?p [*]) :where  [_ :block/refs ?p]]`
 // wholesale lifted from https://github.com/hkgnp/logseq-wordcount-plugin/blob/master/index.js
 // Credit to https://stackoverflow.com/users/11854986/ken-lee for the below function
 const mixedWordsFunction = (str) => {
-  // console.log("mixed")
   /// fix problem in special characters such as middle-dot, etc.
   str = str.replace(/[\u007F-\u00FE.,\/#!$%\^&\*;:{}=\-_`~()>\\]/g, ' ');
 
@@ -57,10 +58,8 @@ async function runQuery(query:string) {
     let qresult = await logseq.DB.datascriptQuery(query)
         qresult = qresult?.flat()
     if(qresult) {
-      // console.log("Succes",qresult)
       return qresult.length
     }
-    console.log("Sorry",qresult)
     return `Sorry query error: ${query}`
   } catch (err) {
     console.log(err)
@@ -85,7 +84,8 @@ async function parseContent(query:string) {
       for (let a = 0; a < qresult.length; a++) {
         if (qresult[a]?.content) {
           totalWords += mixedWordsFunction(qresult[a].content);
-          totalChars += (qresult[a].content.match(/[a-zA-Z]/g)||[]).length
+//FIXME what about other 'alphabets'?
+          totalChars += (qresult[a].content.match( reChars)||[]).length
           totalEmoji += (qresult[a].content.match(reEmoji)||[]).length          
           codeBlocks += (qresult[a].content.match(reCode)||[]).length  
           //FIXME codeChars is buggy
