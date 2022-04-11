@@ -1,7 +1,7 @@
 {
   "name": "logseq-analysis",
-  "version": "0.1.1b",
-  "description": "Starter Plugin",
+  "version": "0.1.1c",
+  "description": "Analyse your graph's content",
   "main": "dist/index.html",
   "targets": {
     "main": false

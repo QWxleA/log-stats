@@ -210,19 +210,21 @@ async function onTemplate(uuid){
 
 const main = async () => {
   console.log(`Plugin: ${pluginName[1]} loaded`)
-  await logseq.useSettingsSchema(settingsTemplate)
+  logseq.useSettingsSchema(settingsTemplate)
+
+  logseq.Editor.registerSlashCommand('Analysis: Insert Graph Statistics', async () => {
+    await logseq.Editor.insertAtEditingCursor("{{renderer :analysis}} ");
+  });
 
   logseq.App.onMacroRendererSlotted(async ({ slot, payload }) => {
     try {
       var [type ] = payload.arguments
       if (type !== ':analysis') return
-
+      
       const templYN = await onTemplate(payload.uuid)      
-      let analysis:string = await analyseGraph()
-      const uuid = true //FIXME, old quality check
-      const msg = uuid ? `<span style="color: green">{{renderer ${payload.arguments} }}</span> (will run with template)` : `<span style="color: red">{{renderer ${payload.arguments} }}</span> (wrong tag?)`
+      const msg = `<span style="color: green">{{renderer ${payload.arguments} }}</span> (will run with template)`
 
-      if (templYN === true || uuid === false) { 
+      if (templYN === true) { 
           await logseq.provideUI({
           key: "analysis",
           slot,
@@ -233,18 +235,12 @@ const main = async () => {
         return 
       }
       else { 
-        // const nblock = await logseq.Editor.getBlock(uuid);
-        // if (!nblock.properties?.id) { logseq.Editor.upsertBlockProperty(nblock.uuid, "id", nblock.uuid); }
         await logseq.Editor.updateBlock(payload.uuid, "[:i \"Working...\"]") 
+        let analysis:string = await analyseGraph()
         await logseq.Editor.updateBlock(payload.uuid, analysis) 
       }  
     } catch (error) { console.log(error) }
   })
-
-  logseq.Editor.registerSlashCommand('Analysis: Insert Graph Statistics', async () => {
-    await logseq.Editor.insertAtEditingCursor(`{{renderer :analysis}} `);
-  });
-
 }
 
 logseq.ready(main).catch(console.error);
