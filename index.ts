@@ -1,5 +1,14 @@
 import '@logseq/libs';
-//FIXME if current page = org-mode, use different markup
+import { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
+
+const settingsTemplate:SettingSchemaDesc[] = [{
+  key: "analyseTitle",
+  type: 'string',
+  default: "Logseq Database Analyses 📊",
+  title: "Title of the Analysis",
+  description: "In case you're not a fan of the default title",
+}
+]
 
 const reEmoji = /[\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u{1f680}-\u{1f6ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f1e6}-\u{1f1ff}\u{1f191}-\u{1f251}\u{1f004}\u{1f0cf}\u{1f170}-\u{1f171}\u{1f17e}-\u{1f17f}\u{1f18e}\u{3030}\u{2b50}\u{2b55}\u{2934}-\u{2935}\u{2b05}-\u{2b07}\u{2b1b}-\u{2b1c}\u{3297}\u{3299}\u{303d}\u{00a9}\u{00ae}\u{2122}\u{23f3}\u{24c2}\u{23e9}-\u{23ef}\u{25b6}\u{23f8}-\u{23fa}]/ug
 const reCode  = /(```[\s\S]*?```)/gm
@@ -40,7 +49,6 @@ const mixedWordsFunction = (str) => {
   const count2 = matches2 ? matches2.length : 0;
 
   /// return the total of the mixture
-  // console.log(`Count 1:${count1} 2:${count2}`)
   return count1 + count2;
 };
 
@@ -119,7 +127,6 @@ async function analyseGraph() {
   const charText = txt[1]
   const emojiText = txt[2]
 
-  //Block Quotes?
   const blocksCode = txt[3]
   const charCode = txt[4]
 
@@ -130,28 +137,23 @@ async function analyseGraph() {
   const extLinks = txt[7]
   const video = txt[8]
   const asset = txt[9]
-  //FIXME2  + Characters: ${charCode}
-
   
 async function addBlock(items:Object) {
-  console.log("Input ->", items)
   let ret 
   let index = 0;
   for (const [key, value] of Object.entries(items)) {
-    console.log(`${index} -> ${key}: ${value}`);
     if (index === 0) {
-      console.log(`DB index 0:: ${index} -> ${key}: ${value}`)
       ret = (value) ? `[:h3 "${value}"]\n[:ul ` : "[:ul "
     } else {
       ret += `[:li "${key}: ${value}"]`
     }
     index++
   }
-  ret += "]\n"
+  ret += "]\n" //close ul
   return ret
 } 
 
-  let msg = `[:h2 "Logseq Database Analyses"]\n`
+  let msg = `[:h2 "${logseq.settings.analyseTitle}"]\n`
   msg += await addBlock({
     title: false,
     "Pages": pages
@@ -206,8 +208,8 @@ async function onTemplate(uuid){
 }
 
 const main = async () => {
-  console.log(`Plugin: ${pluginName[1]} loaded`);
-  // await logseq.useSettingsSchema(settingsTemplate)
+  console.log(`Plugin: ${pluginName[1]} loaded`)
+  await logseq.useSettingsSchema(settingsTemplate)
 
   logseq.App.onMacroRendererSlotted(async ({ slot, payload }) => {
     try {
