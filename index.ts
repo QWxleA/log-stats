@@ -145,7 +145,7 @@ async function addBlock(items:Object) {
     if (index === 0) {
       ret = (value) ? `[:h3 "${value}"][:ul ` : "[:ul "
     } else {
-      ret += `[:li "${key}: ${value}"]`
+      ret += `[:li "${key}: ${value.toLocaleString()}"]`
     }
     index++
   }
