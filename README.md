@@ -1,6 +1,6 @@
 <div id="top"></div>
 <!--
-*** Thanks for checking out the logseq-analysis. If you have a suggestion
+*** Thanks for checking out the log-stats. If you have a suggestion
 *** that would make this better, please fork the repo and create a pull request
 *** or simply open an issue with the tag "enhancement".
 *** Don't forget to give the project a star!
@@ -27,23 +27,23 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/QWxleA/logseq-analysis">
+  <a href="https://github.com/QWxleA/log-stats">
     <img src="./images/icon.png" alt="Logo" width="80" height="80">
   </a>
 
-  <h3 align="center">logseq-analysis</h3>
+  <h3 align="center">Log-Stats 📊</h3>
 
   <p align="center">
     Analyse your Graph for peace of mind (and quiet bragging rights)
     <br />
-    <a href="https://github.com/QWxleA/logseq-analysis"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/QWxleA/log-stats"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/QWxleA/logseq-analysis">View Demo</a>
+    <a href="https://github.com/QWxleA/log-stats">View Demo</a>
     ·
-    <a href="https://github.com/QWxleA/logseq-analysis/issues">Report Bug</a>
+    <a href="https://github.com/QWxleA/log-stats/issues">Report Bug</a>
     ·
-    <a href="https://github.com/QWxleA/logseq-analysis/issues">Request Feature</a>
+    <a href="https://github.com/QWxleA/log-stats/issues">Request Feature</a>
   </p>
 </div>
 
@@ -68,7 +68,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://github.com/QWxleA/logseq-analysis/)
+[![Product Name Screen Shot][product-screenshot]](https://github.com/QWxleA/log-stats/)
 
 
 Get a quick overview of all that's in your graph:
@@ -123,7 +123,7 @@ Get a quick overview of all that's in your graph:
 
 ## Issues
 
-See the [open issues](https://github.com/QWxleA/logseq-analysis/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/QWxleA/log-stats/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -161,7 +161,7 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 
 Alex Qwxlea - [@QwxleaA](https://twitter.com/QwxleaA) 
 
-Project Link: [https://github.com/QWxleA/logseq-analysis/](https://github.com/QWxleA/logseq-analysis/)
+Project Link: [https://github.com/QWxleA/log-stats/](https://github.com/QWxleA/log-stats/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -169,15 +169,15 @@ Project Link: [https://github.com/QWxleA/logseq-analysis/](https://github.com/QW
 
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[contributors-shield]: https://img.shields.io/github/contributors/QWxleA/logseq-analysis.svg?style=for-the-badge
-[contributors-url]: https://github.com/QWxleA/logseq-analysis/graphs/contributors
-[forks-shield]: https://img.shields.io/github/forks/QWxleA/logseq-analysis.svg?style=for-the-badge
-[forks-url]: https://github.com/QWxleA/logseq-analysis/network/members
-[stars-shield]: https://img.shields.io/github/stars/QWxleA/logseq-analysis.svg?style=for-the-badge
-[stars-url]: https://github.com/QWxleA/logseq-analysis/stargazers
-[issues-shield]: https://img.shields.io/github/issues/QWxleA/logseq-analysis.svg?style=for-the-badge
-[issues-url]: https://github.com/QWxleA/logseq-analysis/issues
-[license-shield]: https://img.shields.io/github/license/QWxleA/logseq-analysis.svg?style=for-the-badge
-[license-url]: https://github.com/QWxleA/logseq-analysis/blob/master/LICENSE.txt
+[contributors-shield]: https://img.shields.io/github/contributors/QWxleA/log-stats.svg?style=for-the-badge
+[contributors-url]: https://github.com/QWxleA/log-stats/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/QWxleA/log-stats.svg?style=for-the-badge
+[forks-url]: https://github.com/QWxleA/log-stats/network/members
+[stars-shield]: https://img.shields.io/github/stars/QWxleA/log-stats.svg?style=for-the-badge
+[stars-url]: https://github.com/QWxleA/log-stats/stargazers
+[issues-shield]: https://img.shields.io/github/issues/QWxleA/log-stats.svg?style=for-the-badge
+[issues-url]: https://github.com/QWxleA/log-stats/issues
+[license-shield]: https://img.shields.io/github/license/QWxleA/log-stats.svg?style=for-the-badge
+[license-url]: https://github.com/QWxleA/log-stats/blob/master/LICENSE.txt
 [product-screenshot]: ./images/screenshot.gif
 [configuration-screenshot]: ./images/configuration.png

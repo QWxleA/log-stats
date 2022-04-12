@@ -2,10 +2,10 @@ import '@logseq/libs';
 import { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
 
 const settingsTemplate:SettingSchemaDesc[] = [{
-  key: "analyseTitle",
+  key: "logstatsTitle",
   type: 'string',
-  default: "Logseq Database Analyses 📊",
-  title: "Title of the Analysis",
+  default: "Logseq Grapg Stats 📊",
+  title: "Title of the Stats",
   description: "In case you're not a fan of the default title",
 }
 ]
@@ -20,7 +20,7 @@ const reAsset = /!\[.*?\]\(\.\.\/assets\/.*?\)/gm
 //FIXME what about other 'alphabets'?
 const reChars = /[a-zA-Z]/g
 
-const pluginName  = ["logseq-analysis", "Logseq Analysis"]
+const pluginName  = ["logstats", "Logseq Stats"]
 const queryPages  = `[:find (pull ?p [*]) :where [_ :block/page ?p]]`
 const queryTasks  = `[:find (pull ?b [*]) :where [?b :block/marker ?m] (not [(contains? #{"DONE"} ?m)])]`
 const queryDone   = `[:find (pull ?b [*]) :where [?b :block/marker ?m] [(contains? #{"DONE"} ?m)]]`
@@ -153,7 +153,7 @@ async function addBlock(items:Object) {
   return ret
 } 
 
-  let msg = `[:div.color-level {:style {:padding-left 5}} [:h2 "${logseq.settings.analyseTitle}"]`
+  let msg = `[:div.color-level {:style {:padding-left 5}} [:h2 "${logseq.settings.logstatsTitle}"]`
   msg += await addBlock({
     title: false,
     "Pages": pages
@@ -212,21 +212,21 @@ const main = async () => {
   console.log(`Plugin: ${pluginName[1]} loaded`)
   logseq.useSettingsSchema(settingsTemplate)
 
-  logseq.Editor.registerSlashCommand('Analysis: Insert Graph Statistics', async () => {
-    await logseq.Editor.insertAtEditingCursor("{{renderer :analysis}} ");
+  logseq.Editor.registerSlashCommand('logstats: Insert Graph Statistics', async () => {
+    await logseq.Editor.insertAtEditingCursor("{{renderer :logstats}} ");
   });
 
   logseq.App.onMacroRendererSlotted(async ({ slot, payload }) => {
     try {
       var [type ] = payload.arguments
-      if (type !== ':analysis') return
+      if (type !== ':logstats') return
       
       const templYN = await onTemplate(payload.uuid)      
       const msg = `<span style="color: green">{{renderer ${payload.arguments} }}</span> (will run with template)`
 
       if (templYN === true) { 
           await logseq.provideUI({
-          key: "analysis",
+          key: "logstats",
           slot,
           template: `${msg}`,
           reset: true,
@@ -235,9 +235,9 @@ const main = async () => {
         return 
       }
       else { 
-        await logseq.Editor.updateBlock(payload.uuid, "[:i \"Working...\"]") 
-        let analysis:string = await analyseGraph()
-        await logseq.Editor.updateBlock(payload.uuid, analysis) 
+        await logseq.Editor.updateBlock(payload.uuid, "[:i \"Working..📈..📈.\"]") 
+        let logstats:string = await analyseGraph()
+        await logseq.Editor.updateBlock(payload.uuid, logstats) 
       }  
     } catch (error) { console.log(error) }
   })

@@ -1,6 +1,6 @@
 {
-  "name": "logseq-analysis",
-  "version": "0.1.2",
+  "name": "log-stats",
+  "version": "0.1.2a",
   "description": "Analyse your graph's content",
   "main": "dist/index.html",
   "targets": {
@@ -17,8 +17,8 @@
     "@logseq/libs": "0.0.1-alpha.35"
   },
   "logseq": {
-    "id": "logseq-analysis",
-    "title": "logseq-analysis",
+    "id": "log-stats",
+    "title": "log-stats",
     "icon": "icon.png"
   },
   "devDependencies": {
