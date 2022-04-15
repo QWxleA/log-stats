@@ -10,22 +10,29 @@ const settingsTemplate:SettingSchemaDesc[] = [{
 }
 ]
 
-const reEmoji = /[\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u{1f680}-\u{1f6ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f1e6}-\u{1f1ff}\u{1f191}-\u{1f251}\u{1f004}\u{1f0cf}\u{1f170}-\u{1f171}\u{1f17e}-\u{1f17f}\u{1f18e}\u{3030}\u{2b50}\u{2b55}\u{2934}-\u{2935}\u{2b05}-\u{2b07}\u{2b1b}-\u{2b1c}\u{3297}\u{3299}\u{303d}\u{00a9}\u{00ae}\u{2122}\u{23f3}\u{24c2}\u{23e9}-\u{23ef}\u{25b6}\u{23f8}-\u{23fa}]/ug
-const reCode  = /(```[\s\S]*?```)/gm
-const reQuery = /(#\+BEGIN_QUERY[\s\S]*?#\+END_QUERY)/gm
-const reQuspl = /({{query[\s\S]*?}})/gm
-const reLink  = /\[.*?\]\(http.*?\)/gm
-const reYoutb = /{{youtube https.*?}}/gm
-const reAsset = /!\[.*?\]\(\.\.\/assets\/.*?\)/gm
+const reEmoji:RegExp = /[\u{1f300}-\u{1f5ff}\u{1f900}-\u{1f9ff}\u{1f600}-\u{1f64f}\u{1f680}-\u{1f6ff}\u{2600}-\u{26ff}\u{2700}-\u{27bf}\u{1f1e6}-\u{1f1ff}\u{1f191}-\u{1f251}\u{1f004}\u{1f0cf}\u{1f170}-\u{1f171}\u{1f17e}-\u{1f17f}\u{1f18e}\u{3030}\u{2b50}\u{2b55}\u{2934}-\u{2935}\u{2b05}-\u{2b07}\u{2b1b}-\u{2b1c}\u{3297}\u{3299}\u{303d}\u{00a9}\u{00ae}\u{2122}\u{23f3}\u{24c2}\u{23e9}-\u{23ef}\u{25b6}\u{23f8}-\u{23fa}]/ug
+const reCode:RegExp  = /(```[\s\S]*?```)/gm
+const reQuery:RegExp = /(#\+BEGIN_QUERY[\s\S]*?#\+END_QUERY)/gm
+const reQuspl:RegExp = /({{query[\s\S]*?}})/gm
+const reLink:RegExp  = /\[.*?\]\(http.*?\)/gm
+const reYoutb:RegExp = /{{youtube https.*?}}/gm
+const reAsset:RegExp = /!\[.*?\]\(\.\.\/assets\/.*?\)/gm
+//clojure block reference
+const reClojBR:String = "\\\\(\\\\([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\\\)\\\\)"
+
 //FIXME what about other 'alphabets'?
 const reChars = /[a-zA-Z]/g
 
+//FIXME remove ``
 const pluginName  = ["logstats", "Logseq Stats"]
-const queryPages  = `[:find (pull ?p [*]) :where [_ :block/page ?p]]`
+const queryPages  = `[:find (pull ?p [*]) :where [?p :block/uuid ?u][?p :block/name]]`
 const queryTasks  = `[:find (pull ?b [*]) :where [?b :block/marker ?m] (not [(contains? #{"DONE"} ?m)])]`
 const queryDone   = `[:find (pull ?b [*]) :where [?b :block/marker ?m] [(contains? #{"DONE"} ?m)]]`
-const queryBlocks = `[:find (pull ?b [*]) :where [?b :block/uuid ?u]]`
-const queryRefs   = `[:find (pull ?p [*]) :where  [_ :block/refs ?p]]`
+const queryBlocks = `[:find (pull ?b [*]) :where [?b :block/uuid ?u][?b :block/content]]`
+const queryRefs   = `[:find (pull ?p [*]) :where  [_ :block/refs ?p]]` //FIXME Is this correct???!?!?
+const queryCloBl  = `[:find (pull ?b [*]) :where  [(re-pattern "${reClojBR}") ?regex][?b :block/content ?c][(re-find ?regex ?c)]]]`
+const queryOrphan = `[:find (pull ?p [*]) :where [?p :block/uuid ?u][?p :block/name](not [?b :block/refs ?p]) ]`
+
 
 // wholesale lifted from https://github.com/hkgnp/logseq-wordcount-plugin/blob/master/index.js
 // Credit to https://stackoverflow.com/users/11854986/ken-lee for the below function
@@ -56,7 +63,9 @@ const mixedWordsFunction = (str) => {
 async function runQuery(query:string) {
   try {
     let qresult = await logseq.DB.datascriptQuery(query)
-        qresult = qresult?.flat()
+    console.log("DB 000", query, qresult)
+    qresult = qresult?.flat()
+    console.log("DB 111ß", query, qresult)
     if(qresult) {
       return qresult.length
     }
@@ -136,10 +145,12 @@ async function parseGraph() {
   //fetch all data and return an object
   const ana = new Object();
 
-  const pages = await runQuery(queryPages)
+  const pages      = await runQuery(queryPages)
   const blocksText = await runQuery(queryBlocks)
-  const tasks = await runQuery(queryTasks)
-  const done = await runQuery(queryDone)
+  const tasks      = await runQuery(queryTasks)
+  const done       = await runQuery(queryDone)
+  const blockRef   = await runQuery(queryCloBl)
+  const orphans    = await runQuery(queryOrphan)
 
   const txt = await parseContent(queryBlocks)
   const refs = await runQuery(queryRefs)
@@ -162,11 +173,13 @@ async function parseGraph() {
   ana.references = {
     title: "References",
     "Interconnections (refs)": refs,
+    "Block References": blockRef,
+    "Orphans": orphans,
     "External links": txt[7]
   }
   ana.task = {
     title: "Task management",
-    "Tasks": refs,
+    "Tasks": tasks,
     "Finished tasks (DONE)": done
   }
   ana.queries = {
@@ -233,6 +246,7 @@ const main = async () => {
   logseq.useSettingsSchema(settingsTemplate)
 
   logseq.Editor.registerSlashCommand('logstats: Insert Graph Statistics', async () => {
+    console.log("DB ok?")
     await logseq.Editor.insertAtEditingCursor("{{renderer :logstats}} ");
   });
 
@@ -253,9 +267,7 @@ const main = async () => {
           template: `${msg}`,
           reset: true,
           style: { flex: 1 },
-        })
-        return
-      }
+        }); return }
       else {
         await logseq.Editor.updateBlock(payload.uuid, "[:i \"Working..📈..📈.\"]")
         let logstats:string = await analyseGraph(quality)

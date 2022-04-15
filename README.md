@@ -138,6 +138,10 @@ This will give the same information, just without any styling, which makes it ea
 
 ## Issues
 
+**The number of pages is off by 14?** You are correct, Logseq comes with fourteen built-in pages. They do get counted in the queries. Just accept them as a free bonus.
+
+**I type in `<something not latin>`, and my words don't get counted?** You are correct. I do not know how to count non-latin words. Help appreciated.
+
 See the [open issues](https://github.com/QWxleA/log-stats/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
