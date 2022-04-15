@@ -55,6 +55,7 @@
   <ol>
     <li><a href="#about-the-project">About The Project</a></li>
     <li><a href="#installation">Installation</a></li>
+    <li><a href="#Using the plugin">Using the plugin</a></li>
     <li><a href="#configuration">Configuration</a></li>
     <li><a href="#issues">Issues</a></li>
     <li><a href="#contributing">Contributing</a></li>
@@ -107,7 +108,21 @@ Get a quick overview of all that's in your graph:
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+## Using the plugin
 
+The plugin is activated with the *slash-command* `/logstats: Insert Graph Statistics`, which will insert the following placeholder:
+
+`{{renderer :logstats}}` 
+
+Just using it will give an overview of the data in your graph.
+
+For debugging purposes you can add something after *logstats*, like this:
+
+`{{renderer :logstats, anything}}`
+
+This will give the same information, just without any styling, which makes it easier to copy/paste.
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- Configuration -->
 ## Configuration

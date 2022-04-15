@@ -4,7 +4,7 @@ import { SettingSchemaDesc } from '@logseq/libs/dist/LSPlugin';
 const settingsTemplate:SettingSchemaDesc[] = [{
   key: "logstatsTitle",
   type: 'string',
-  default: "Logseq Grapg Stats 📊",
+  default: "Logseq Graph Stats 📊",
   title: "Title of the Stats",
   description: "In case you're not a fan of the default title",
 }
@@ -86,60 +86,39 @@ async function parseContent(query:string) {
           totalWords += mixedWordsFunction(qresult[a].content);
 //FIXME what about other 'alphabets'?
           totalChars += (qresult[a].content.match( reChars)||[]).length
-          totalEmoji += (qresult[a].content.match(reEmoji)||[]).length          
-          codeBlocks += (qresult[a].content.match(reCode)||[]).length  
+          totalEmoji += (qresult[a].content.match(reEmoji)||[]).length
+          codeBlocks += (qresult[a].content.match(reCode)||[]).length
           //FIXME codeChars is buggy
           // if ((qresult[a].content.match(reCode)||[]).length > 0) {
           //   console.log("DB reCode", (qresult[a].content.match(reCode)||[]))
           //   for (let b = 0; b < qresult[a].content.match(reCode).length; b++) {
           //     // console.log("DB 1", (qresult[a].content.match(reCode)||[])[b])
-              
+
           //     let aa = mixedWordsFunction(qresult[a].content.match(reCode)[b])
           //     codeChars += mixedWordsFunction(qresult[a].content.match(reCode)[b])
           //     console.log(`DB loop ${b} #char ${aa}:`, qresult[a].content.match(reCode)[b])
           //   }
           // }
-          queryBlocks += (qresult[a].content.match(reQuery)||[]).length  
-          querySimple += (qresult[a].content.match(reQuspl)||[]).length  
-          queryLinks  += (qresult[a].content.match(reLink)||[]).length  
-          queryYoutb  += (qresult[a].content.match(reYoutb)||[]).length  
-          queryAssets += (qresult[a].content.match(reAsset)||[]).length  
+          queryBlocks += (qresult[a].content.match(reQuery)||[]).length
+          querySimple += (qresult[a].content.match(reQuspl)||[]).length
+          queryLinks  += (qresult[a].content.match(reLink)||[]).length
+          queryYoutb  += (qresult[a].content.match(reYoutb)||[]).length
+          queryAssets += (qresult[a].content.match(reAsset)||[]).length
         }
       }
-      return [totalWords, totalChars, totalEmoji, codeBlocks, codeChars, 
+      return [totalWords, totalChars, totalEmoji, codeBlocks, codeChars,
         queryBlocks, querySimple, queryLinks, queryYoutb, queryAssets]
     }
     console.log("Sorry",qresult)
-    return `Sorry query error: ${query}`  
+    return `Sorry query error: ${query}`
   } catch (err) {
     console.log(err)
   }
 }
 
-async function analyseGraph() {
-  const pages = await runQuery(queryPages)
-  const blocksText = await runQuery(queryBlocks)
-  const tasks = await runQuery(queryTasks)
-  const done = await runQuery(queryDone)
-  
-  const txt = await parseContent(queryBlocks)
-  const wordsText = txt[0]
-  const charText = txt[1]
-  const emojiText = txt[2]
 
-  const blocksCode = txt[3]
-  const charCode = txt[4]
-
-  const query = txt[5]
-  const squery = txt[6]
-
-  const refs = await runQuery(queryRefs)
-  const extLinks = txt[7]
-  const video = txt[8]
-  const asset = txt[9]
-  
 async function addBlock(items:Object) {
-  let ret 
+  let ret
   let index = 0;
   for (const [key, value] of Object.entries(items)) {
     if (index === 0) {
@@ -151,46 +130,87 @@ async function addBlock(items:Object) {
   }
   ret += "]" //close ul
   return ret
-} 
+}
 
-  let msg = `[:div.color-level {:style {:padding-left 5}} [:h2 "${logseq.settings.logstatsTitle}"]`
-  msg += await addBlock({
-    title: false,
-    "Pages": pages
-  })
-  msg += await addBlock({
+async function parseGraph() {
+  //fetch all data and return an object
+  const ana = new Object();
+
+  const pages = await runQuery(queryPages)
+  const blocksText = await runQuery(queryBlocks)
+  const tasks = await runQuery(queryTasks)
+  const done = await runQuery(queryDone)
+
+  const txt = await parseContent(queryBlocks)
+  const refs = await runQuery(queryRefs)
+
+  ana.all = {
+    title: "",
+    pages: pages
+  }
+  ana.txt = {
     title: "Text",
     "Blocks": blocksText,
-    "Words": wordsText,
-    "Characters": charText,
-    "Emoji": emojiText
-  })
-  msg += await addBlock({
+    "Words": txt[0],
+    "Characters": txt[1],
+    "Emoji": txt[2]
+  }
+  ana.code = {
     title: "Code",
-    "Codeblocks": blocksCode
-  })
-  msg += await addBlock({
+    "Codeblocks": txt[3]
+  }
+  ana.references = {
     title: "References",
     "Interconnections (refs)": refs,
-    "External links": extLinks
-  })
-  msg += await addBlock({
+    "External links": txt[7]
+  }
+  ana.task = {
     title: "Task management",
     "Tasks": refs,
     "Finished tasks (DONE)": done
-  })
-  msg += await addBlock({
+  }
+  ana.queries = {
     title: "Queries",
-    "Number of simple queries": squery,
-    "Number of advanced queries": query
-  })
-  msg += await addBlock({
+    "Number of simple queries": txt[6],
+    "Number of advanced queries": txt[5]
+  }
+  ana.media = {
     title: "Media",
-    "Videos": video,
-    "Assets": asset
-  })
-  msg += "]" //close div
-  return msg
+    "Videos": txt[8],
+    "Assets": txt[9]
+  }
+  // console.log("ana", ana)
+  return ana
+}
+
+function style(key, value, quality) {
+  //if quality≠"" -> minimal styling
+  if (quality) {
+    if (key === "title") return (value) ? `${value}\n` : ""
+    return `${key}: ${value.toLocaleString()}\n`
+  } else {
+    if (key === "title") return (value) ? `][:h3 "${value}"][:ul ` : "[:ul "
+    return `[:li "${key}: ${value.toLocaleString()}"]`
+  }
+}
+
+async function analyseGraph(quality:String) {
+  //if quality≠"" -> minimal styling
+  const data:Object = await parseGraph()
+  const msg_ful:String = `[:div.color-level {:style {:padding-left 5}} [:h2 "${logseq.settings.logstatsTitle}"]`
+  const msg_min:String = `${logseq.settings.logstatsTitle}\n`
+  let result:String = (quality) ? msg_min : msg_ful
+  for (const item in data) {
+    if (data.hasOwnProperty(item)) {
+      // console.log("prop",data[item])
+      for (const [key, value]  of Object.entries(data[item])) {
+        result += style(key, value, quality)
+      }
+    }
+  }
+  result += (quality) ? "" : "]]" //close div
+  // console.log("DB done", result)
+  return result
 }
 
 async function onTemplate(uuid){
@@ -202,8 +222,8 @@ async function onTemplate(uuid){
     const checkPRT = (block.parent != null && block.parent.id !== block.page.id)  ? true : false
 
     if (checkTPL === false && checkPRT === false) return false
-    if (checkTPL === true )                       return true 
-    return await onTemplate(block.parent.id) 
+    if (checkTPL === true )                       return true
+    return await onTemplate(block.parent.id)
 
   } catch (error) { console.log(error) }
 }
@@ -218,13 +238,15 @@ const main = async () => {
 
   logseq.App.onMacroRendererSlotted(async ({ slot, payload }) => {
     try {
-      var [type ] = payload.arguments
+      let [type, quality] = payload.arguments
+      // console.log("DB", payload)
+      if (!quality) quality = ""
       if (type !== ':logstats') return
-      
-      const templYN = await onTemplate(payload.uuid)      
+
+      const templYN = await onTemplate(payload.uuid)
       const msg = `<span style="color: green">{{renderer ${payload.arguments} }}</span> (will run with template)`
 
-      if (templYN === true) { 
+      if (templYN === true) {
           await logseq.provideUI({
           key: "logstats",
           slot,
@@ -232,13 +254,13 @@ const main = async () => {
           reset: true,
           style: { flex: 1 },
         })
-        return 
+        return
       }
-      else { 
-        await logseq.Editor.updateBlock(payload.uuid, "[:i \"Working..📈..📈.\"]") 
-        let logstats:string = await analyseGraph()
-        await logseq.Editor.updateBlock(payload.uuid, logstats) 
-      }  
+      else {
+        await logseq.Editor.updateBlock(payload.uuid, "[:i \"Working..📈..📈.\"]")
+        let logstats:string = await analyseGraph(quality)
+        await logseq.Editor.updateBlock(payload.uuid, logstats)
+      }
     } catch (error) { console.log(error) }
   })
 }
